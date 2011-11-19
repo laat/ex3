@@ -117,6 +117,6 @@ def get_precn(pair,n):
 
 def _generate_ngram(sentence, n):
     for i in xrange(len(sentence)-n+1):
-        words = [term.word for term in sentence.terms if term.word and term.word != "" and term.word != "."]
+        words = [term.word for term in sentence.terms if term.word and term.word != "."]
         ngram = words[i:i+n]
         yield ngram
