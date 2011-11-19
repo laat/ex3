@@ -4,25 +4,32 @@ lexical matching, part 1 in the exercice
 """
 
 from collections import defaultdict
+from idf import idf
 
-def word_match(tree, threshold=0.4):
+
+def word_match(tree, threshold=0.4, idf_enabled=False, **kwargs):
     print "Doing word matching"
     classification = []
     for pair in tree:
         words = {}
         # initialize words
+        hypothesis_lenght = 0
+        for sentence in pair.hypothesis:
+            for term in sentence.terms:
+                if term.word and not idf_enabled:
+                    words[term.word] = 0
+                    hypothesis_lenght += 1
+                elif term.word and idf_enabled:
+                    words[term.word] = 0
+                    hypothesis_lenght += idf[term.word]
+
+        # match words
         for sentence in pair.text:
             for term in sentence.terms:
                 if term.word:
-                    words[term.word] = 0
-
-        hypothesis_lenght = 0
-        # match words
-        for sentence in pair.hypothesis:
-            hypothesis_lenght += len(sentence)
-            for term in sentence.terms:
-                if term.word:
-                    if term.word in words:
+                    if term.word in words and idf_enabled:
+                        words[term.word] = idf[term.word]
+                    if term.word in words and not idf_enabled:
                         words[term.word] = 1
 
         # Normalize
@@ -36,7 +43,7 @@ def word_match(tree, threshold=0.4):
 
     return classification
 
-def lemma_match(tree, threshold=0.4):
+def lemma_match(tree, threshold=0.4, **kwargs):
     print "Doing lemma matching"
     classes = []
     for pair in tree:
@@ -71,9 +78,7 @@ def lemma_match(tree, threshold=0.4):
 
     return classes
 
-
-# BLEU
-def bleu(tree, threshold=0.4, n=4):
+def bleu(tree, threshold=0.4, n=4, idf_enabled=False, **kwargs):
     print "Applying BLEU algorithm"
     classes = []
     for pair in tree:
@@ -112,6 +117,6 @@ def get_precn(pair,n):
 
 def _generate_ngram(sentence, n):
     for i in xrange(len(sentence)-n+1):
-        words = [term.word for term in sentence.terms if term.word and term.word != "."]
+        words = [term.word for term in sentence.terms if term.word and term.word != "" and term.word != "."]
         ngram = words[i:i+n]
         yield ngram

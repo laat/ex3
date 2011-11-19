@@ -2,6 +2,7 @@
 from matching.lexical import word_match
 from matching.lexical import lemma_match
 from matching.lexical import bleu
+from matching.idf import generate_idf_score
 from utils.classification import write
 from utils.classification import find_best_threshold
 from utils import load_xml
@@ -18,17 +19,14 @@ METHODS = {
     "bleu": bleu
 }
 
-def main(tree, output, method, threshold, find_best, n=4):
-    #if not tree:
-    #    tree = pickle.load(open("training.picle", "rb"))
-    #else:
-    #    tree = load_xml.todict(tree)
-    #    pickle.dump(tree, open("training.picle", "wb"))
+def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
+    if idf_enabled:
+        generate_idf_score(tree[0])
 
     if find_best:
-        find_best_threshold(tree[0], METHODS[method], tree[1], output)
+        find_best_threshold(tree[0], METHODS[method], tree[1], output, n=n, idf_enabled=idf_enabled)
     else:
-        classification = METHODS[method](tree[0], threshold=threshold, n=n)
+        classification = METHODS[method](tree[0], threshold=threshold, n=n, idf_enabled=idf_enabled)
         print "writing output"
         write(classification, output)
         print "Accuracy = %.4f" % evaluate(tree[1], output)
@@ -53,6 +51,7 @@ if __name__ == '__main__':
         parser.add_argument('-t', '--threshold', type=float, default=0.4)
         parser.add_argument('-n', '--ngram_length', type=int, default=3)
         parser.add_argument('-b', '--find_best_threshold', action='store_true')
+        parser.add_argument('-i', '--idf_enabled', action='store_true')
         args = parser.parse_args()
 
 
@@ -63,5 +62,6 @@ if __name__ == '__main__':
             args['method'],
             args['threshold'],
             args['find_best_threshold'],
-            n = args["ngram_length"]
+            n = args["ngram_length"],
+            idf_enabled = args['idf_enabled']
         )

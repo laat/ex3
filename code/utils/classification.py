@@ -15,14 +15,15 @@ def write(classifications, output_file):
     with open(output_file, "w") as f:
         f.writelines(strings)
 
-def find_best_threshold(tree, method, input_file, output_file):
+def find_best_threshold(tree, method, input_file, output_file, n=4, idf_enabled=False):
+
     best_threshold = 0.05
     best_accuracy = 0
     threshold = 0.05
     while(threshold <= 1):
         threshold = round(threshold,2)
         #classify with thresshold
-        classification = method(tree, threshold=threshold)
+        classification = method(tree, threshold=threshold, n=n, idf_enabled=idf_enabled)
         write(classification, output_file)
 
         #find accuracy
