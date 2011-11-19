@@ -1,26 +1,34 @@
 # coding=utf-8
 from matching.lexical import word_match
 from matching.lexical import lemma_match
+from matching.lexical import bleu
 from utils.classification import write
 from utils.classification import find_best_threshold
 from utils import load_xml
 from eval_rte import evaluate
 
 import argparse
+import pickle
 
 
+# funky case switch with METHODS
 METHODS = {
     "word": word_match,
-    "lemma": lemma_match
+    "lemma": lemma_match,
+    "bleu": bleu
 }
 
-def main(tree, output, method, threshold, find_best):
-    # funky case switch
+def main(tree, output, method, threshold, find_best, n=4):
+    #if not tree:
+    #    tree = pickle.load(open("training.picle", "rb"))
+    #else:
+    #    tree = load_xml.todict(tree)
+    #    pickle.dump(tree, open("training.picle", "wb"))
 
     if find_best:
         find_best_threshold(tree[0], METHODS[method], tree[1], output)
     else:
-        classification = METHODS[method](tree[0], threshold=threshold)
+        classification = METHODS[method](tree[0], threshold=threshold, n=n)
         print "writing output"
         write(classification, output)
         print "Accuracy = %.4f" % evaluate(tree[1], output)
@@ -37,12 +45,13 @@ class InputFileAction(argparse.Action):
 if __name__ == '__main__':
         parser = argparse.ArgumentParser()
         parser.add_argument("-f", "--input_file", dest="tree", type=str,
-                            action=InputFileAction, required=True)
+                            action=InputFileAction)
         parser.add_argument("-o", "--output_file", dest="output", type=str,
                             required=True)
         parser.add_argument('-m', '--method', type=str, required=True, 
                             choices=METHODS.keys())
         parser.add_argument('-t', '--threshold', type=float, default=0.4)
+        parser.add_argument('-n', '--ngram_length', type=int, default=3)
         parser.add_argument('-b', '--find_best_threshold', action='store_true')
         args = parser.parse_args()
 
@@ -53,5 +62,6 @@ if __name__ == '__main__':
             args['output'],
             args['method'],
             args['threshold'],
-            args['find_best_threshold']
+            args['find_best_threshold'],
+            n = args["ngram_length"]
         )

@@ -8,7 +8,7 @@ printing the accuracy score.
 
 # EM - 4/11/11
 
-from xml.etree.cElementTree import iterparse
+from xml.etree.ElementTree import iterparse
 
 
 def evaluate(ref_fname, pred_fname):

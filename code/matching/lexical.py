@@ -9,7 +9,6 @@ def word_match(tree, threshold=0.4):
     print "Doing word matching"
     classification = []
     for pair in tree:
-        #words = defaultdict(int)  # dict som returnerer 0 når key ikke finnes
         words = {}
         # initialize words
         for sentence in pair.text:
@@ -39,7 +38,6 @@ def word_match(tree, threshold=0.4):
 
 def lemma_match(tree, threshold=0.4):
     print "Doing lemma matching"
-
     classes = []
     for pair in tree:
 
@@ -72,3 +70,48 @@ def lemma_match(tree, threshold=0.4):
         classes.append((int(pair.id), result))
 
     return classes
+
+
+# BLEU
+def bleu(tree, threshold=0.4, n=4):
+    print "Applying BLEU algorithm"
+    classes = []
+    for pair in tree:
+        precn = [0]*n
+
+        for i in xrange(n):
+            precn[i] = get_precn(pair, i+1)
+        score = sum(precn) * (1/float(n))
+
+        result = False
+        if threshold < score:
+            result = True
+
+        classes.append((int(pair.id), result))
+    return classes
+
+def get_precn(pair,n):
+    ngrams = {}
+    ngram_length = 0
+    for sentence in pair.hypothesis:
+        for ngram in _generate_ngram(sentence, n):
+            ngram_length += 1
+            if len(ngram):
+                ngram = " ".join(ngram)
+                ngrams[ngram] = 0
+
+    #count
+    for sentence in pair.text:
+        for ngram in _generate_ngram(sentence, n):
+            ngram = " ".join(ngram)
+            if ngram in ngrams:
+                ngrams[ngram] += 1
+    count = sum(ngrams.values())
+
+    return count/float(ngram_length)
+
+def _generate_ngram(sentence, n):
+    for i in xrange(len(sentence)-n+1):
+        words = [term.word for term in sentence.terms if term.word and term.word != "."]
+        ngram = words[i:i+n]
+        yield ngram

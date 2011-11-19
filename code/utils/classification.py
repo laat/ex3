@@ -20,6 +20,7 @@ def find_best_threshold(tree, method, input_file, output_file):
     best_accuracy = 0
     threshold = 0.05
     while(threshold <= 1):
+        threshold = round(threshold,2)
         #classify with thresshold
         classification = method(tree, threshold=threshold)
         write(classification, output_file)
