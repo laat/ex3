@@ -7,7 +7,7 @@ from collections import defaultdict
 from idf import idf
 
 
-def word_match(tree, threshold=0.4, idf_enabled=False, **kwargs):
+def word_match(tree, threshold=0.52, idf_enabled=False, **kwargs):
     print "Doing word matching"
     classification = []
     for pair in tree:
@@ -43,7 +43,7 @@ def word_match(tree, threshold=0.4, idf_enabled=False, **kwargs):
 
     return classification
 
-def lemma_match(tree, threshold=0.4, **kwargs):
+def lemma_match(tree, threshold=0.43, **kwargs):
     print "Doing lemma matching"
     classes = []
     for pair in tree:
@@ -62,9 +62,9 @@ def lemma_match(tree, threshold=0.4, **kwargs):
         for sentence in pair.hypothesis:
             hypothesis_lenght += len(sentence)
             for term in sentence.terms:
-                if term.word and term.lemma: #and term.pos:
+                if term.word and term.lemma and term.pos:
                     if term.lemma in lemmas:
-                        #if term.pos in lemmas[term.lemma]: 
+                        if term.pos in lemmas[term.lemma]: 
                         #ignoring pos gives better matching
                             matches += 1
 
@@ -78,7 +78,7 @@ def lemma_match(tree, threshold=0.4, **kwargs):
 
     return classes
 
-def bleu(tree, threshold=0.4, n=4, idf_enabled=False, **kwargs):
+def bleu(tree, threshold=0.285, n=4, idf_enabled=False, **kwargs):
     print "Applying BLEU algorithm"
     classes = []
     for pair in tree:
@@ -111,8 +111,8 @@ def get_precn(pair,n):
             ngram = " ".join(ngram)
             if ngram in ngrams:
                 ngrams[ngram] += 1
-    count = sum(ngrams.values())
 
+    count = sum(ngrams.values())
     return count/float(ngram_length)
 
 def _generate_ngram(sentence, n):
