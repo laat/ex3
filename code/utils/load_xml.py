@@ -39,6 +39,15 @@ def get_terms(sentence):
         pos = _find_lower(t, "pos-tag")
         lemma = _find_lower(t, "lemma")
         try:
+            relation = (_find_lower(t, "relation"),
+                    t.find("relation").attrib["parent"])
+        except AttributeError:
+            relation = None
+
+        terms.append(Term(id, word, pos, relation, lemma))
+    return terms
+
+def _find_lower(t, term):
     try:
         return t.find(term).text.strip().lower()
     except AttributeError:

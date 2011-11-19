@@ -62,7 +62,7 @@ def lemma_match(tree, threshold=0.4, **kwargs):
         for sentence in pair.hypothesis:
             hypothesis_lenght += len(sentence)
             for term in sentence.terms:
-                if term.word and term.lemma and term.pos:
+                if term.word and term.lemma: #and term.pos:
                     if term.lemma in lemmas:
                         #if term.pos in lemmas[term.lemma]: 
                         #ignoring pos gives better matching
