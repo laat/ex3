@@ -1,13 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-#*************************************************************************
-#
-#     This sample implementation is incomplete!
-#     You need to implement the remaining parts yourself.
-#
-#*************************************************************************
-    
 """
 Sample implementation of tree edit distance algorithm from 
 Kaizhong Zhang & Dennis ShaSha, 
@@ -20,6 +12,7 @@ the preprocessing.
 """
 
 # EM - 11/2011
+# SF - 11/2011
 
 
 class Node(list):
@@ -28,8 +21,9 @@ class Node(list):
     more child nodes
     """
 
-    def __init__(self, label, *children):
+    def __init__(self, name, label, *children):
         self.label = label
+        self.name = name
         list.__init__(self, children)
         
     def is_leaf(self):
@@ -45,11 +39,14 @@ class Node(list):
         if self.is_leaf():
             return self.label
         else:
-            return ( self.label + 
+            return ( self.name + " " + self.label + 
                      "( " + 
                      " ".join([str(child) for child in self]) + 
                      ")" )
         
+    def __eq__(self, other):
+        return str(self) == str(other)
+
     def __repr__(self):
         return self.label
         
@@ -86,12 +83,12 @@ class ForestDist(dict):
     def __getitem__(self, (forest1, forest2)):
         # If i>j, then T[i..j] = 0
         # (cf. Zhang & Shasha:p.1249)
-        if forest1 is not None:
+        if forest1 != None:
             i1, j1 = forest1
             if i1 > j1:
                 forest1 = None
                 
-        if forest2 is not None:
+        if forest2 != None:
             i2, j2 = forest2
             if i2 > j2:
                 forest2 = None
@@ -129,14 +126,17 @@ def postorder(root_node):
     # "Let T[I] be the ith node in the tree according to the left-to-right
     # postordering"
         
-    raise NotImplementedError()
-    #*************************************************************************
-    #
-    #     Your implementation goes here
-    #
-    #*************************************************************************
-    
-    
+    #SF Implemented
+    queue = [root_node]
+    rev_order = []
+    while len(queue):
+        n = queue.pop()
+        for c in n:
+            queue.append(c)
+        rev_order.append(n)
+    rev_order.reverse()
+    return rev_order
+
 def leftmost_leaf_descendant_indices(node_list):
     """
     Return a list of the *indices* of the leftmost leaf descendants according
@@ -145,15 +145,22 @@ def leftmost_leaf_descendant_indices(node_list):
     # Cf.  Zhang & Shasha:p.1249:
     # "l(i) is the number of the leftmost leaf descendant of the subtree
     # rooted at T[i]. When T[i] is a leaft, l(i)=i."
-    
-    raise NotImplementedError()
-    #*************************************************************************
-    #
-    #    Your implementation goes here
-    #
-    #*************************************************************************
-        
-        
+
+    # SF Implemented
+    def dfs_left(node):
+        if node.is_leaf():
+            return node
+        else:
+            return dfs_left(node.left_child())
+
+    #print [dfs_left(n) for n in node_list]
+
+    indices = []
+    for node in node_list:
+        left_most = dfs_left(node)
+        indices.append(node_list.index(left_most))
+    return indices
+
         
 def key_root_indices(lld_indices):
     """
@@ -162,14 +169,16 @@ def key_root_indices(lld_indices):
     """
     # Cf. Zhang & Shasha:p.1251: "LR_keyroots(T) = {k| there exists no k'>k
     # such that l(k)=l(k')}
-    
-    raise NotImplementedError()
-    #*************************************************************************
-    #
-    #    Your implementation goes here
-    #
-    #*************************************************************************
-    
+
+    kr_indices = {k:0 for k in lld_indices}
+
+    for v, k in enumerate(lld_indices):
+        kr_indices[k] = v
+
+    kr_indices = kr_indices.values()
+    kr_indices.sort()
+
+    return kr_indices
     
     
 def distance(t1, t2, costs=unit_costs):
@@ -190,20 +199,43 @@ def distance(t1, t2, costs=unit_costs):
         # temporary array for forest distances
         FD = ForestDist()
         
-        for n in range(l1[i], i+1):
+        for n in xrange(l1[i], i+1):
             FD[ (l1[i],n), None ] = ( FD[ (l1[i],n-1), None ] + 
                                       costs(T1[n], None) )
             
-        for m in range(l2[j], j+1):
+        for m in xrange(l2[j], j+1):
             FD[ None, (l2[j],m) ] = ( FD[ None, (l2[j],m-1) ] + 
                                       costs(None, T2[m].label) )
-            
-        raise NotImplementedError()
-        #*************************************************************************
-        #
-        #    Your implementation of the final part of edit_dist goes here
-        #
-        #*************************************************************************
+
+        for x in xrange(l1[i], i+1):
+            for y in xrange(l2[j], j+1):
+                if l1[x] == l1[i] and l2[y] == l2[j]:
+                    #FD(T1[ l(i) .. i1], T2[ l(j) .. j1]) =
+                    #min(
+                    #    FD(T1[ l(i) .. i1-1], T2[ l(j) .. j1]) + y(T1[i1] -> A),
+                    #    FD(T1[ l(i) .. i1], T2[ l(j) .. j1-1]) + y(A -> T2[j1]),
+                    #    FD(T1[ l(i) .. i1-1], T2[ l(j) .. j1-1]) + y(T1[i1] -> T2[j1])),
+                    #)
+                    #TD[i1,j1] = FD(T1[ l(i) .. i1], T2[ l(j) .. j1])
+                    FD[ (l1[i], x), (l2[j], y) ] = min([
+                        FD[ (l1[i], x-1), (l2[j], y) ] + unit_costs(T1[x], None),
+                        FD[ (l1[i], x), (l2[j], y-1) ] + unit_costs(None, T2[y]),
+                        FD[ (l1[i], x-1), (l2[j], y-1) ] + unit_costs(T1[x], T2[y])
+                    ])
+                    TD[x,y] = FD[ (l1[i], x), (l2[j], y) ] 
+                else:
+                    #FD(T1[ l(i) .. i1], T2[ l(j) .. j1]) =
+                    #min(
+                    #    FD(T1[ l(i) .. i1-1], T2[ l(j) .. j1]) + y(T1[i1] -> A),
+                    #    FD(T1[ l(i) .. i1], T2[ l(j) .. j1-1]) + y(A -> T2[j1]),
+                    #    FD(T1[ l(i) .. i1-1], T2[ l(j) .. j1-1]) + TD(i1, j1)
+                    #)
+
+                    FD[ (l1[i], x), (l2[j], y) ] = min([
+                        FD[ (l1[i], x-1), (l2[j], y) ] + unit_costs(T1[x], None),
+                        FD[ (l1[i], x), (l2[j], y-1) ] + unit_costs(None, T2[y]),
+                        FD[ (l1[i], x-1), (l2[j], y-1) ] + TD[x,y]
+                    ])
                     
         return TD[i,j]
     
@@ -243,25 +275,24 @@ def print_matrix(T1, T2, TD):
     print
 
     
-        
-if __name__ is "__main__":
+if __name__ == "__main__":
     # Cf. Zhang & Shasha: Fig. 4 and Fig. 8
     
-    t1 = Node("f",
-             Node("d",
-                  Node("a"),
-                  Node("c",
-                       Node("b"))),
-             Node("e"))
+    t1 = Node("", "f",
+             Node("", "d",
+                  Node("", "a"),
+                  Node("", "c",
+                       Node("", "b"))),
+             Node("", "e"))
     
 
     
-    t2 = Node("f",
-              Node("c",
-                   Node("d",
-                        Node("a"),
-                        Node("b"))),
-              Node("e"))
+    t2 = Node("", "f",
+              Node("", "c",
+                   Node("", "d",
+                        Node("", "a"),
+                        Node("", "b"))),
+              Node("", "e"))
 
     print "t1 =", t1    
     print "t2 =", t2

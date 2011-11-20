@@ -3,9 +3,11 @@ from matching.lexical import word_match
 from matching.lexical import lemma_match
 from matching.lexical import bleu
 from matching.idf import generate_idf_score
+from utils.tree_edit_distance import postorder
 from utils.classification import write
 from utils.classification import find_best_threshold
 from utils import load_xml
+from utils import create_tree
 from eval_rte import evaluate
 
 import argparse
@@ -16,10 +18,21 @@ import pickle
 METHODS = {
     "word": word_match,
     "lemma": lemma_match,
-    "bleu": bleu
+    "bleu": bleu,
+    "test": None
 }
 
 def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
+    # first phase, loading file
+    print "Loading xmlfile"
+    if method in ["word", "lemma", "bleu"]:
+        tree = (load_xml.get_pairs(tree), tree)
+    else:
+        tree = (create_tree.generate_syntax_tree(tree), tree)
+        print tree[0]["1"]["text"][0]
+        print postorder(tree[0]["1"]["text"][0][1])
+    print "done."
+
     if idf_enabled:
         generate_idf_score(tree[0])
 
@@ -42,8 +55,7 @@ class InputFileAction(argparse.Action):
 
 if __name__ == '__main__':
         parser = argparse.ArgumentParser()
-        parser.add_argument("-f", "--input_file", dest="tree", type=str,
-                            action=InputFileAction)
+        parser.add_argument("-f", "--input_file", dest="file", type=str)
         parser.add_argument("-o", "--output_file", dest="output", type=str,
                             required=True)
         parser.add_argument('-m', '--method', type=str, required=True, 
@@ -57,7 +69,7 @@ if __name__ == '__main__':
 
         args = vars(args)
         main(
-            args['tree'],
+            args['file'],
             args['output'],
             args['method'],
             args['threshold'],
