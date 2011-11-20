@@ -21,7 +21,8 @@ class Node(list):
     more child nodes
     """
 
-    def __init__(self, name, label, *children):
+    def __init__(self, name, label, serial, *children):
+        self.serial = serial
         self.label = label
         self.name = name
         list.__init__(self, children)
@@ -39,13 +40,16 @@ class Node(list):
         if self.is_leaf():
             return self.label
         else:
-            return ( self.name + " " + self.label + 
+            return ( self.label + 
                      "( " + 
                      " ".join([str(child) for child in self]) + 
                      ")" )
         
     def __eq__(self, other):
-        return str(self) == str(other)
+        return str(self.name) == str(other.name) and str(self.serial) == str(other.serial)
+
+    def __cmp__(self, other):
+        return cmp(self.name, other.name) # because order matters
 
     def __repr__(self):
         return self.label
@@ -135,6 +139,7 @@ def postorder(root_node):
             queue.append(c)
         rev_order.append(n)
     rev_order.reverse()
+
     return rev_order
 
 def leftmost_leaf_descendant_indices(node_list):
@@ -259,7 +264,7 @@ def distance(t1, t2, costs=unit_costs):
         for j in kr2:
             edit_dist(i, j)
             
-    print_matrix(T1, T2, TD)
+    #print_matrix(T1, T2, TD)
             
     return TD[i,j]
             
@@ -300,5 +305,3 @@ if __name__ == "__main__":
     
     d = distance(t1, t2) 
     print "distance =", d
-
-

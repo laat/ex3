@@ -2,6 +2,7 @@
 from matching.lexical import word_match
 from matching.lexical import lemma_match
 from matching.lexical import bleu
+from matching.syntactic import print_tree_edit_distance
 from matching.idf import generate_idf_score
 from utils.tree_edit_distance import postorder
 from utils.classification import write
@@ -19,7 +20,7 @@ METHODS = {
     "word": word_match,
     "lemma": lemma_match,
     "bleu": bleu,
-    "test": None
+    "print_ted": print_tree_edit_distance
 }
 
 def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
@@ -29,9 +30,9 @@ def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
         tree = (load_xml.get_pairs(tree), tree)
     else:
         tree = (create_tree.generate_syntax_tree(tree), tree)
-        print tree[0]["1"]["text"]
-        print postorder(tree[0]["1"]["text"])
     print "done."
+
+
 
     if idf_enabled:
         generate_idf_score(tree[0])
@@ -39,10 +40,14 @@ def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
     if find_best:
         find_best_threshold(tree[0], METHODS[method], tree[1], output, n=n, idf_enabled=idf_enabled)
     else:
-        classification = METHODS[method](tree[0], threshold=threshold, n=n, idf_enabled=idf_enabled)
-        print "writing output"
-        write(classification, output)
-        print "Accuracy = %.4f" % evaluate(tree[1], output)
+        # main running of the application
+        if method == "print_ted":
+            METHODS[method](tree[0])
+        else:
+            classification = METHODS[method](tree[0], threshold=threshold, n=n, idf_enabled=idf_enabled)
+            print "writing output"
+            write(classification, output)
+            print "Accuracy = %.4f" % evaluate(tree[1], output)
         
 class InputFileAction(argparse.Action):
         # Kalles når inputfile er satt, inputfil blir en liste av par, isteden

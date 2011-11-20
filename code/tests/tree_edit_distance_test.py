@@ -4,21 +4,22 @@ from utils.tree_edit_distance import *
 
 class TreeEditDistanceTest(unittest.TestCase):
     def setUp(self):
-        self.A = Node("6", "f",
-                 Node("4","d",
-                      Node("1", "a"),
-                      Node("3", "c",
-                           Node("2", "b"))),
-                 Node("5", "e"))
+        # the serial should not matter
+        self.A = Node("6", "f", "2",
+                 Node("4","d", "2",
+                      Node("1", "a", "2"),
+                      Node("3", "c", "2",
+                           Node("2", "b", "2"))),
+                 Node("5", "e", "2"))
         
 
         
-        self.B = Node("6", "f",
-                  Node("4", "c",
-                       Node("3","d",
-                            Node("1", "a"),
-                            Node("2", "b"))),
-                  Node("5", "e"))
+        self.B = Node("6", "f", "1",
+                  Node("4", "c", "1",
+                       Node("3","d", "1",
+                            Node("1", "a", "1"),
+                            Node("2", "b", "1"))),
+                  Node("5", "e", "1"))
 
     def test_postorder(self):
         posta = postorder(self.A)
