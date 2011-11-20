@@ -14,13 +14,22 @@ def generate_syntax_tree(file_name):
                 sentences = []
                 for sentence in child.getchildren():
                     roots, nodes_by_id, nodes_by_parent = sainitize_sentence(sentence)
-                    forest = []
                     for root in roots:
-                        forest.append(create_node_tree(root, nodes_by_id, nodes_by_parent))
-                    sentences.append(forest)
+                        sentences.append(create_node_tree(root, nodes_by_id, nodes_by_parent))
+                sentences = join_roots(sentences)
                 pair[tag] = sentences
             pairs[elem.get('id')] = pair
     return pairs
+
+def join_roots(roots):
+    if len(roots) == 1:
+        return roots[0]
+    elif len(roots) > 1:
+        n_root = Node("E", "fin")
+        n_root.extend(roots)
+        return n_root
+    else:
+        return None
 
 def sainitize_sentence(sentence):
     roots = []
@@ -33,13 +42,19 @@ def sainitize_sentence(sentence):
         if node_lemma != None:
             node_lemma = node_lemma.text.strip().rstrip()
         node_relation = node.find('relation')
+
+
         if node_lemma != None:
             nodes_by_id[node_id] = node_id, node_lemma
-            if node_lemma == "fin":
-                roots.append((node_id, node_lemma)) # the roots in the forest
+
         if node_relation != None and node_lemma != None:
             parent = node_relation.get('parent')
             nodes_by_parent[parent].append( (node_id, node_lemma))
+
+
+        if node_relation == None and node_lemma != None:
+            if node_lemma == "fin":
+                roots.append((node_id, node_lemma)) # the roots in the forest
 
     #print roots
     return roots, nodes_by_id, nodes_by_parent

@@ -29,8 +29,8 @@ def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
         tree = (load_xml.get_pairs(tree), tree)
     else:
         tree = (create_tree.generate_syntax_tree(tree), tree)
-        print tree[0]["1"]["text"][0]
-        print postorder(tree[0]["1"]["text"][0][1])
+        print tree[0]["1"]["text"]
+        print postorder(tree[0]["1"]["text"])
     print "done."
 
     if idf_enabled:
