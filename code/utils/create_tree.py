@@ -53,20 +53,25 @@ def sainitize_sentence(sentence):
     for node in sentence.iterfind('node'):
         node_id = node.get('id')
         node_lemma = node.find('lemma')
+        node_word = node.find('word')
 
         if node_lemma != None:
-            node_lemma = node_lemma.text.strip().rstrip()
+            node_lemma = node_lemma.text.strip().rstrip().lower()
+
+        if node_word != None:
+            node_word = node_word.text.strip().rstrip().lower()
+
         node_relation = node.find('relation')
 
         if node_lemma != None:
-            nodes_by_id[node_id] = node_id, node_lemma
+            nodes_by_id[node_id] = (node_id, node_lemma, node_word)
 
         if node_relation != None and node_lemma != None:
             parent = node_relation.get('parent')
-            nodes_by_parent[parent].append( (node_id, node_lemma))
+            nodes_by_parent[parent].append( (node_id, node_lemma, node_word))
 
         if node_relation == None:
-                roots.append((node_id, ""))
+                roots.append((node_id, "", None))
 
     #print roots
     return roots, nodes_by_id, nodes_by_parent
@@ -81,12 +86,12 @@ def create_node_tree(start,nodes_by_id, nodes_by_parent, serial):
                         parent node id as the key
     """
     #BFS
-    root = Node(start[0], start[1], serial)
+    root = Node(start[0], start[1], serial, word=start[2])
     stack = [root]  # labels
     while len(stack):
         node = stack.pop(0)
         children = get_children(node, nodes_by_id, nodes_by_parent)
-        children_nodes = [Node(child[0], child[1], serial) for child in children]
+        children_nodes = [Node(child[0], child[1], serial, word=child[2]) for child in children]
         if children:
             node.extend(children_nodes)
             stack.extend(children_nodes)

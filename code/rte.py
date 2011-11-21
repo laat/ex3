@@ -3,9 +3,11 @@ from matching.lexical import word_match
 from matching.lexical import lemma_match
 from matching.lexical import bleu
 from matching.syntactic import print_tree_edit_distance
+from matching.syntactic import tree_edit_distance
 from matching.idf import generate_idf_score
 from utils.tree_edit_distance import postorder
 from utils.classification import write
+from utils.classification import classify_results
 from utils.classification import find_best_threshold
 from utils import load_xml
 from utils import create_tree
@@ -20,7 +22,8 @@ METHODS = {
     "word": word_match,
     "lemma": lemma_match,
     "bleu": bleu,
-    "print_ted": print_tree_edit_distance
+    "print_ted": print_tree_edit_distance,
+    "ted" : tree_edit_distance
 }
 
 def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
@@ -35,29 +38,23 @@ def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
 
 
     if idf_enabled:
-        generate_idf_score(tree[0])
+        if method in ["ted", "print_ted"]:
+            ## using another treestructure, must generate it for this method
+            generate_idf_score(load_xml.get_pairs(tree[1]))
+        else:
+            generate_idf_score(tree[0])
 
     if find_best:
-        find_best_threshold(tree[0], METHODS[method], tree[1], output, n=n, idf_enabled=idf_enabled)
+        find_best_threshold(tree[0], METHODS[method], tree[1], 
+                            output, n=n, idf_enabled=idf_enabled)
     else:
-        # main running of the application
-        if method == "print_ted":
-            METHODS[method](tree[0])
-        else:
-            classification = METHODS[method](tree[0], threshold=threshold, n=n, idf_enabled=idf_enabled)
-            print "writing output"
-            write(classification, output)
-            print "Accuracy = %.4f" % evaluate(tree[1], output)
-        
-class InputFileAction(argparse.Action):
-        # Kalles når inputfile er satt, inputfil blir en liste av par, isteden
-        # for pathen til input_file
-    def __call__(self, parser, namespace, values, option_string=None):
-        print "Parsing xml-file..."
-        val = load_xml.get_pairs(values)
-        print "done."
-        setattr(namespace, self.dest, (val, values))
+        results = METHODS[method](tree[0], n=n, idf_enabled=idf_enabled)
+        classification = classify_results(results, threshold) 
 
+        print "writing output"
+        write(classification, output)
+        print "Accuracy = %.4f" % evaluate(tree[1], output)
+        
 if __name__ == '__main__':
         parser = argparse.ArgumentParser()
         parser.add_argument("-f", "--input_file", dest="file", type=str)

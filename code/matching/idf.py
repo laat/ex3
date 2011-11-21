@@ -8,7 +8,6 @@ def generate_idf_score(tree):
     print "Calculating idf scores"
     global idf
     n, df = count_words_in_documtents(tree)
-
     for word, freq in df.iteritems():
         idf[word] = log(n/freq)
 

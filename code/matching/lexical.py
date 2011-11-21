@@ -7,7 +7,7 @@ from collections import defaultdict
 from idf import idf
 
 
-def word_match(tree, threshold=0.52, idf_enabled=False, **kwargs):
+def word_match(tree, idf_enabled=False, **kwargs):
     print "Doing word matching"
     classification = []
     for pair in tree:
@@ -35,15 +35,11 @@ def word_match(tree, threshold=0.52, idf_enabled=False, **kwargs):
         # Normalize
         score = sum(words.values())/float(hypothesis_lenght)
 
-        result = False
-        if threshold < score:
-            result = True
-
-        classification.append((int(pair.id), result))
+        classification.append((int(pair.id), score))
 
     return classification
 
-def lemma_match(tree, threshold=0.43, **kwargs):
+def lemma_match(tree, **kwargs):
     print "Doing lemma matching"
     classes = []
     for pair in tree:
@@ -70,15 +66,11 @@ def lemma_match(tree, threshold=0.43, **kwargs):
 
         score = matches/float(hypothesis_lenght)
 
-        result = False
-        if threshold < score:
-            result = True
-
-        classes.append((int(pair.id), result))
+        classes.append((int(pair.id), score))
 
     return classes
 
-def bleu(tree, threshold=0.285, n=4, idf_enabled=False, **kwargs):
+def bleu(tree, n=4, idf_enabled=False, **kwargs):
     print "Applying BLEU algorithm"
     classes = []
     for pair in tree:
@@ -88,11 +80,7 @@ def bleu(tree, threshold=0.285, n=4, idf_enabled=False, **kwargs):
             precn[i] = get_precn(pair, i+1)
         score = sum(precn) * (1/float(n))
 
-        result = False
-        if threshold < score:
-            result = True
-
-        classes.append((int(pair.id), result))
+        classes.append((int(pair.id), score))
     return classes
 
 def get_precn(pair,n):

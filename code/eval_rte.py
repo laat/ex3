@@ -11,13 +11,13 @@ printing the accuracy score.
 from xml.etree.ElementTree import iterparse
 
 
-def evaluate(ref_fname, pred_fname):
+def evaluate(ref_fname, pred_fname, pred_id2label=None, ref_id2label=None):
     """
     Evaluate entailment predictions by comparing with human entailment
     judgements. Return accuracy score.
     """
-    ref_id2label = parse_reference(ref_fname)
-    pred_id2label = parse_predictions(pred_fname)
+    ref_id2label = ref_id2label if ref_id2label else parse_reference(ref_fname)
+    pred_id2label = pred_id2label if pred_id2label else parse_predictions(pred_fname)
     assert len(ref_id2label) == len(pred_id2label)
     
     correct = [ id for id, label in ref_id2label.iteritems()
@@ -54,7 +54,8 @@ def parse_predictions(inf):
         inf = open(inf)
         
     # how NOT to use Python ;-)
-    return dict(pair.split() for pair in inf.read().strip().split("\n")[1:])
+    p = dict(pair.split() for pair in inf.read().strip().split("\n")[1:])
+    return p
         
     
 

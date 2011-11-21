@@ -21,10 +21,11 @@ class Node(list):
     more child nodes
     """
 
-    def __init__(self, name, label, serial, *children):
+    def __init__(self, name, label, serial, word=None, *children):
         self.serial = serial
         self.label = label
         self.name = name
+        self.word = word
         list.__init__(self, children)
         
     def is_leaf(self):
@@ -107,11 +108,15 @@ def unit_costs(node1, node2):
     i.e. cost of insertion, deletion, substitution are all 1
     """
     # insertion cost
+    # SF- tror det er delete i steden 
     if node1 is None:
-        return 1
+        return 0
     
     # deletion cost
+    # SF- tror det er insert
     if node2 is None:
+        if node1.name.startswith("E"):
+            return 0
         return 1
     
     # substitution cost
