@@ -5,15 +5,20 @@ from matching.lexical import bleu
 from matching.syntactic import print_tree_edit_distance
 from matching.syntactic import tree_edit_distance
 from matching.idf import generate_idf_score
+
 from matching.machine_learning import get_features
 from matching.machine_learning import write_features
 from matching.machine_learning import knn_classifier
+
 from utils.tree_edit_distance import postorder
+
 from utils.classification import write
 from utils.classification import classify_results
 from utils.classification import find_best_threshold
+
 from utils import load_xml
 from utils import create_tree
+
 from eval_rte import evaluate
 
 import argparse

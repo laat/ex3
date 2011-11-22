@@ -19,7 +19,9 @@ def tree_edit_distance(tree, idf_enabled=False, **kwargs):
     for k, d, hypothesis, text in generate_edit_distance(tree, idf=idf_enabled):
         # a shorter distance corresponds to a high score
         print d, hypothesis_to_none_ted(hypothesis)
-        normalized = 1-(d/(2*float(hypothesis_to_none_ted(hypothesis, idf_enabled=idf_enabled))))
+        normalized = 1-(d/(2*float(hypothesis_to_none_ted(hypothesis,
+                                     idf_enabled=idf_enabled))))
+
         classification.append((int(k), normalized))
         print normalized
     return classification
@@ -53,7 +55,8 @@ def idf_cost(node1, node2):
         if node1.word:
             return idf[node1.word]
         return 0
-    if node1.label != node2.label: #substitution
+    #substitution
+    if node1.label != node2.label:
         if node1.word != None and node2.word != None:
             return idf[node1.word] + idf[node2.word]
         elif node1.word:
