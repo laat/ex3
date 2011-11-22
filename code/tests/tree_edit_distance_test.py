@@ -11,8 +11,7 @@ class TreeEditDistanceTest(unittest.TestCase):
                       Node("3", "c", "2",
                            Node("2", "b", "2"))),
                  Node("5", "e", "2"))
-        
-
+        print "A", self.A
         
         self.B = Node("6", "f", "1",
                   Node("4", "c", "1",
@@ -20,6 +19,7 @@ class TreeEditDistanceTest(unittest.TestCase):
                             Node("1", "a", "1"),
                             Node("2", "b", "1"))),
                   Node("5", "e", "1"))
+        print "B", self.B
 
     def test_postorder(self):
         posta = postorder(self.A)
@@ -50,4 +50,11 @@ class TreeEditDistanceTest(unittest.TestCase):
         self.failUnlessEqual(kri, [1, 4, 5])
 
     def test_distance(self):
-        self.failUnlessEqual(distance(self.A, self.B), 2)
+        def cost(n1,n2):
+            if n1 is None or n2 is None:
+                return 1
+            if n1.label == n2.label:
+                return 0
+            return 1
+
+        self.failUnlessEqual(distance(self.A, self.B, costs=cost), 2)

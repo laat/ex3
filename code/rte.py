@@ -5,6 +5,9 @@ from matching.lexical import bleu
 from matching.syntactic import print_tree_edit_distance
 from matching.syntactic import tree_edit_distance
 from matching.idf import generate_idf_score
+from matching.machine_learning import get_features
+from matching.machine_learning import write_features
+from matching.machine_learning import knn_classifier
 from utils.tree_edit_distance import postorder
 from utils.classification import write
 from utils.classification import classify_results
@@ -23,27 +26,34 @@ METHODS = {
     "lemma": lemma_match,
     "bleu": bleu,
     "print_ted": print_tree_edit_distance,
-    "ted" : tree_edit_distance
+    "ted" : tree_edit_distance,
+    "features" : get_features
 }
 
 def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
-    # first phase, loading file
-    print "Loading xmlfile"
+    #load xml and idf
     if method in ["word", "lemma", "bleu"]:
+        print "Loading xmlfile"
         tree = (load_xml.get_pairs(tree), tree)
-    else:
-        tree = (create_tree.generate_syntax_tree(tree), tree)
-    print "done."
+        print "done."
 
-
-
-    if idf_enabled:
-        if method in ["ted", "print_ted"]:
-            ## using another treestructure, must generate it for this method
-            generate_idf_score(load_xml.get_pairs(tree[1]))
-        else:
+        if idf_enabled:
             generate_idf_score(tree[0])
 
+    elif method in ["print_ted", "ted"]:
+        print "Loading xmlfile"
+        tree = (create_tree.generate_syntax_tree(tree), tree)
+        print "done."
+
+        if idf_enabled:
+            generate_idf_score(load_xml.get_pairs(tree[1]))
+
+    elif method in ["features"]:
+        features = get_features(tree, idf_enabled)
+        write_features(output, features) 
+        return
+
+    #run methods
     if find_best:
         find_best_threshold(tree[0], METHODS[method], tree[1], 
                             output, n=n, idf_enabled=idf_enabled)

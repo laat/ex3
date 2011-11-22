@@ -21,11 +21,11 @@ class Node(list):
     more child nodes
     """
 
-    def __init__(self, name, label, serial, word=None, *children):
+    def __init__(self, name, label, serial, *children, **kwargs):
         self.serial = serial
         self.label = label
         self.name = name
-        self.word = word
+        self.word = kwargs["word"] if "word" in kwargs else None
         list.__init__(self, children)
         
     def is_leaf(self):
@@ -168,7 +168,7 @@ def leftmost_leaf_descendant_indices(node_list):
     indices = []
     for node in node_list:
         left_most = dfs_left(node)
-        indices.append(node_list.index(left_most))
+        indices.append(node_list.index(left_most)) # Node.__eq__, eneste sted
     return indices
 
         
@@ -228,9 +228,9 @@ def distance(t1, t2, costs=unit_costs):
                     #)
                     #TD[i1,j1] = FD(T1[ l(i) .. i1], T2[ l(j) .. j1])
                     FD[ (l1[i], x), (l2[j], y) ] = min([
-                        FD[ (l1[i], x-1), (l2[j], y) ] + unit_costs(T1[x], None),
-                        FD[ (l1[i], x), (l2[j], y-1) ] + unit_costs(None, T2[y]),
-                        FD[ (l1[i], x-1), (l2[j], y-1) ] + unit_costs(T1[x], T2[y])
+                        FD[ (l1[i], x-1), (l2[j], y) ] + costs(T1[x], None),
+                        FD[ (l1[i], x), (l2[j], y-1) ] + costs(None, T2[y]),
+                        FD[ (l1[i], x-1), (l2[j], y-1) ] + costs(T1[x], T2[y])
                     ])
                     TD[x,y] = FD[ (l1[i], x), (l2[j], y) ] 
                 else:
@@ -242,8 +242,8 @@ def distance(t1, t2, costs=unit_costs):
                     #)
 
                     FD[ (l1[i], x), (l2[j], y) ] = min([
-                        FD[ (l1[i], x-1), (l2[j], y) ] + unit_costs(T1[x], None),
-                        FD[ (l1[i], x), (l2[j], y-1) ] + unit_costs(None, T2[y]),
+                        FD[ (l1[i], x-1), (l2[j], y) ] + costs(T1[x], None),
+                        FD[ (l1[i], x), (l2[j], y-1) ] + costs(None, T2[y]),
                         FD[ (l1[i], x-1), (l2[j], y-1) ] + TD[x,y]
                     ])
                     

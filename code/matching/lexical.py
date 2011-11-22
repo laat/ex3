@@ -39,7 +39,7 @@ def word_match(tree, idf_enabled=False, **kwargs):
 
     return classification
 
-def lemma_match(tree, **kwargs):
+def lemma_match(tree, pos=True, **kwargs):
     print "Doing lemma matching"
     classes = []
     for pair in tree:
@@ -60,8 +60,11 @@ def lemma_match(tree, **kwargs):
             for term in sentence.terms:
                 if term.word and term.lemma and term.pos:
                     if term.lemma in lemmas:
-                        if term.pos in lemmas[term.lemma]: 
-                        #ignoring pos gives better matching
+                        if pos: 
+                            if term.pos in lemmas[term.lemma]: 
+                            #ignoring pos gives better matching
+                                matches += 1
+                        else:
                             matches += 1
 
         score = matches/float(hypothesis_lenght)
@@ -70,24 +73,63 @@ def lemma_match(tree, **kwargs):
 
     return classes
 
-def bleu(tree, n=4, idf_enabled=False, **kwargs):
+def get_simple_negations(tree):
+    print "simple negation count"
+
+    def _count_sentence(sentence):
+        count = 0
+        for term in sentence.terms:
+            if term.relation and term.relation[0] in ["neg"]:
+                count += 1
+            elif term.word and term.relation and\
+                    term.relation[0] in ["'t"]:
+                count += 1
+        return count
+
+    classes = []
+    for pair in tree:
+        text_count = 0
+        for sentence in pair.text:
+            text_count += _count_sentence(sentence)
+
+        h_count = 0
+        for sentence in pair.text:
+            h_count += _count_sentence(sentence)
+
+        try:
+            score = h_count/float(text_count)
+        except:
+            if h_count == 0:
+                score = 1
+            else:
+                score = 0
+
+        classes.append((int(pair.id), score))
+    return classes
+
+def bleu(tree, n=4, idf_enabled=False, return_only_n=False, lemma=False, **kwargs):
     print "Applying BLEU algorithm"
     classes = []
     for pair in tree:
         precn = [0]*n
 
         for i in xrange(n):
-            precn[i] = get_precn(pair, i+1)
-        score = sum(precn) * (1/float(n))
+            precn[i] = get_precn(pair, i+1, lemma=lemma)
+
+        if return_only_n:
+            score = precn[return_only_n-1] * (1/float(n))
+        else:
+            score = sum(precn) * (1/float(n))
 
         classes.append((int(pair.id), score))
     return classes
 
-def get_precn(pair,n):
+def get_precn(pair,n, lemma=False):
     ngrams = {}
     ngram_length = 0
     for sentence in pair.hypothesis:
-        for ngram in _generate_ngram(sentence, n):
+        gen = _generate_ngram_lemma(sentence, n) if lemma else _generate_ngram(sentence, n)
+        for ngram in gen:
             ngram_length += 1
             if len(ngram):
                 ngram = " ".join(ngram)
@@ -95,7 +137,8 @@ def get_precn(pair,n):
 
     #count
     for sentence in pair.text:
-        for ngram in _generate_ngram(sentence, n):
+        gen = _generate_ngram_lemma(sentence, n) if lemma else _generate_ngram(sentence, n)
+        for ngram in gen:
             ngram = " ".join(ngram)
             if ngram in ngrams:
                 ngrams[ngram] += 1
@@ -108,3 +151,11 @@ def _generate_ngram(sentence, n):
         words = [term.word for term in sentence.terms if term.word ]
         ngram = words[i:i+n]
         yield ngram
+
+def _generate_ngram_lemma(sentence, n):
+    for i in xrange(len(sentence)-n+1):
+        words = [term.lemma for term in sentence.terms if term.lemma ]
+        ngram = words[i:i+n]
+        yield ngram
+
+
