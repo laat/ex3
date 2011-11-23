@@ -93,6 +93,10 @@ class Term(object):
         self.pos = pos
         self.relation = relation
         self.lemma = lemma
+    def __hash__(self):
+        return self.lemma.__hash__()
+    def __str__(self):
+        return self.lemma
 
 #def todict(obj, classkey=None):
 #    if isinstance(obj, dict):

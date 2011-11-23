@@ -7,6 +7,32 @@ from collections import defaultdict
 from idf import idf
 
 
+memory = {}
+def _get_synonyms(word):
+    if word and word != "fin": 
+        from nltk.corpus import wordnet as wn
+        for ss in wn.synsets(word):
+            for n in ss.lemma_names:
+                yield n
+
+def _term_equals(a,b):
+    a_syns = _get_synonyms(a.lemma)
+    b_syns = set(_get_synonyms(b.lemma))
+    for syn in a_syns:
+        if syn not in b_syns: 
+            return False
+    return True
+
+def _memoized_term_equals(a,b):
+    try: return memory[a,b]
+    except: pass
+    b = _term_equals(a,b)
+    memory[a,b] = b
+    return b
+
+
+
+
 def word_match(tree, idf_enabled=False, **kwargs):
     print "Doing word matching"
     classification = []
@@ -113,7 +139,9 @@ def get_simple_negations(tree):
         classes.append((int(pair.id), score))
     return classes
 
+
 def bleu(tree, n=4, idf_enabled=False, return_only_n=False, lemma=False, **kwargs):
+    memory = {}
     print "Applying BLEU algorithm"
     classes = []
     for pair in tree:
@@ -130,11 +158,40 @@ def bleu(tree, n=4, idf_enabled=False, return_only_n=False, lemma=False, **kwarg
         classes.append((int(pair.id), score))
     return classes
 
+
 def get_precn(pair,n, lemma=False):
-    ngrams = {}
-    ngram_length = 0
+    matching = 0
+    total = 0
+    for hyp in pair.hypothesis:
+        for tex in pair.text:
+            for i in range(0,len(hyp)-n+1):
+                def _tmp():
+                    for a in range(0,n):
+                        if i+a >= len(hyp.terms) or i+a >= len(tex.terms): return False
+                        term = hyp.terms[i+a]
+                        other_term = tex.terms[i+a]
+                        if not _memoized_term_equals(term, other_term): return False
+                    return True
+                if _tmp(): matching += 1
+                total += 1
+    return matching/float(total)
+
+    '''      
+        words = [term.lemma for term in sentence.terms if term.lemma and term.lemma != "fin"]
+        ngram = words[i:i+n]
+
+  
     for sentence in pair.hypothesis:
-        gen = _generate_ngram_lemma(sentence, n) if lemma else _generate_ngram(sentence, n)
+        sentence_ngrams = _generate_ngram_lemma(sentence, n) if lemma else _generate_ngram(sentence, n)
+
+    for sentence in pair.text:
+        text_ngrams = _generate_ngram_lemma(sentence, n) if lemma else _generate_ngram(sentence, n)
+        
+        for ngram in text_ngrams:
+            if ngram in ngrams:
+                ngrams[ngram] += 1
+
+
         for ngram in gen:
             ngram_length += 1
             if len(ngram):
@@ -152,11 +209,21 @@ def get_precn(pair,n, lemma=False):
     count = sum(ngrams.values())
     return count/float(ngram_length)
 
-def _generate_ngram(sentence, n):
+
+_generate_ngram(sentence, n):
     for i in xrange(len(sentence)-n+1):
         words = [term.word for term in sentence.terms if term.word and term.word != "fin"]
         ngram = words[i:i+n]
         yield ngram
+'''
+
+'''
+def _enum_ngram_synonyms(ret, w, words):
+    for syn in get_synonyms(words[0]):
+        if len(words)==1:
+            ret.append( w + [syn] )
+        else:
+            _enum_ngram_synonyms(ret, w + [syn], words[1:])
 
 def _generate_ngram_lemma(sentence, n):
     for i in xrange(len(sentence)-n+1):
@@ -164,4 +231,11 @@ def _generate_ngram_lemma(sentence, n):
         ngram = words[i:i+n]
         yield ngram
 
-
+        synongrams = []
+        if len(ngram)>0:
+            _enum_ngram_synonyms(synongrams, [], ngram)
+            for a in synongrams:
+                yield a
+        else:
+            yield ngram
+        '''
