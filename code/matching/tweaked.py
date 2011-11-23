@@ -44,7 +44,6 @@ def get_features(in_file, idf_enabled=False):
     for k, v in score:
         features[k].append(v)
 
-
     #simple negation
     score = lexical.get_simple_negations(lexical_tree)
     for k, v in score:
@@ -66,7 +65,12 @@ def get_features(in_file, idf_enabled=False):
         for k,v in score:
             features[k].append(v)
 
-  
+    memory = {}
+    for n in [2,3]: # 2-gram without synonyms
+        score = bleu(lexical_tree, n=n, idf_enabled=True, lemma=True, synonyms=False)
+        for k,v in score:
+            features[k].append(v)
+
     #appending task and entailment
     for k,v in features.iteritems():
         features[k].extend(ref[str(k)])
@@ -85,6 +89,8 @@ def write_f(outfile, features):
                      ("bleu1", "c"), 
                      ("bleu2" "c"), 
                      ("bleu3", "c"), 
+                     ("bleu2s", "c"), 
+                     ("bleu3s", "c"), 
                      ("task", "d"), 
                      ("stemmer", "d")]
 
