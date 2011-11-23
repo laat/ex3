@@ -37,23 +37,23 @@ def get_features(in_file, idf_enabled=False):
     for k, v in score:
         features[k].append(v)
 
-    #lemma_matching
+    #simple negation
     score = lexical.get_simple_negations(lexical_tree)
     for k, v in score:
         features[k].append(v)
 
-    #leamma_pos_matching
+    #lemma_matching
     score = lexical.lemma_match(lexical_tree)
     for k, v in score:
         features[k].append(v)
 
-    #bigram_matching
+    #bigram_matching (lemma)
     score = lexical.bleu(lexical_tree, n=2, return_only_n=2,
                          idf_enabled=idf_enabled, lemma=True)
     for k, v in score:
         features[k].append(v)
 
-    #simple negation
+    #leamma_pos_matching
     score = lexical.lemma_match(lexical_tree)
     for k, v in score:
         features[k].append(v)
@@ -86,10 +86,12 @@ def knn_classifier(tree, outfile="dev.tab", **kwargs):
     outfile = outfile.rsplit(".",1)[0]
     data = orange.ExampleTable(outfile)
 
-    knn = orange.kNNLearner(data, k=21, name="knn")
+    knn = orange.kNNLearner(data, k=1, name="knn")
 
     for i, example in enumerate(data, 1):
-        p = apply(knn, [example, orange.GetProbabilities])
-        classes.append((i, p["YES"]))
+        p = apply(knn, [example, orange.GetProbabilities])["YES"]
+	if not (p==1.0 or p==0.0):
+		print i, p
+        classes.append((i, p))
     return classes
 

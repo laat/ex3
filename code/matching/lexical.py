@@ -40,6 +40,9 @@ def word_match(tree, idf_enabled=False, **kwargs):
     return classification
 
 def lemma_match(tree, pos=True, **kwargs):
+    '''
+        pos = use pos 
+    '''
     print "Doing lemma matching"
     classes = []
     for pair in tree:
@@ -89,21 +92,14 @@ def get_simple_negations(tree):
     classes = []
     for pair in tree:
         text_count = 0
-        for sentence in pair.text:
-            text_count += _count_sentence(sentence)
+        for text in pair.text:
+            text_count += _count_sentence(text)
 
         h_count = 0
-        for sentence in pair.text:
-            h_count += _count_sentence(sentence)
+        for h in pair.hypothesis:
+            h_count += _count_sentence(h)
 
-        try:
-            score = h_count/float(text_count)
-        except:
-            if h_count == 0:
-                score = 1
-            else:
-                score = 0
-
+        score = h_count%2 == text_count%2
         classes.append((int(pair.id), score))
     return classes
 
