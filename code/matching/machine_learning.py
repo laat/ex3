@@ -1,6 +1,7 @@
 #coding=utf-8
 from matching.idf import generate_idf_score
 from matching import lexical
+from matching import syntactic
 from utils import load_xml
 from utils import create_tree
 from eval_rte import parse_reference
@@ -20,7 +21,7 @@ def get_features(in_file, idf_enabled=False):
 
     print "loading xml..."
     lexical_tree = load_xml.get_pairs(in_file)
-    #syntax_tree = create_tree.generate_syntax_tree(in_file)
+    syntax_tree = create_tree.generate_syntax_tree(in_file)
     print "done loading"
 
     if idf_enabled:
@@ -31,6 +32,7 @@ def get_features(in_file, idf_enabled=False):
 
     print "extracting features"
     features = defaultdict(list)
+
     #word_matching
     score = lexical.word_match(lexical_tree, idf_enabled=idf_enabled)
     for k, v in score:
@@ -58,6 +60,10 @@ def get_features(in_file, idf_enabled=False):
     for k, v in score:
         features[k].append(v)
 
+    score = syntactic.tree_edit_distance(syntax_tree)
+    for k,v in score:
+        features[k].append(v)
+
     #appending task and entailment
     for k,v in features.iteritems():
         features[k].extend(ref[str(k)])
@@ -69,7 +75,7 @@ def write_features(outfile, features):
     ids.sort()
     with open(outfile, "w") as f:
         attribute = [("word", "c"), ("lemma","c"), ("lemmapos","c"), 
-                     ("bigram", "c"), ("neg", "d"),  ("task", "d"), ("stemmer", "d")]
+                     ("bigram", "c"), ("neg", "d"),  ("editdist","c"), ("task", "d"), ("stemmer", "d")]
 
         labels = [v[0] for v in attribute]
         datatype = [v[1] for v in attribute]
@@ -88,11 +94,9 @@ def knn_classifier(tree, outfile="dev.tab", **kwargs):
     data = orange.ExampleTable(outfile)
 
     knn = orange.kNNLearner(data, k=1, name="knn")
-
+  
     for i, example in enumerate(data, 1):
         p = apply(knn, [example, orange.GetProbabilities])["YES"]
-	if not (p==1.0 or p==0.0):
-		print i, p
         classes.append((i, p))
     return classes
 

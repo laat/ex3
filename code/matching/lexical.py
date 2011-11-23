@@ -10,34 +10,43 @@ from idf import idf
 def word_match(tree, idf_enabled=False, **kwargs):
     print "Doing word matching"
     classification = []
+    talla = [3,13,15,19,32,59,63,129,142,153,155,166,167,174,262,266,298,308,314,322,336,358,360,387,404,410,451,463,464,472,484,506,521,538,553,561,563,571,581,660,663,692,693,716,722,739,755]
+
     for pair in tree:
         words = {}
         # initialize words
         hypothesis_lenght = 0
         for sentence in pair.hypothesis:
             for term in sentence.terms:
-                if term.word and not idf_enabled:
-                    words[term.word] = 0
-                    hypothesis_lenght += 1
-                elif term.word and idf_enabled:
-                    words[term.word] = 0
-                    hypothesis_lenght += idf[term.word]
+                if term.word:
+                    if idf_enabled:
+                        words[term.word] = 0
+                        hypothesis_lenght += idf[term.word]
+                    else:
+                        words[term.word] = 0
+                        hypothesis_lenght += 1
 
         # match words
         for sentence in pair.text:
             for term in sentence.terms:
                 if term.word:
-                    if term.word in words and idf_enabled:
-                        words[term.word] = idf[term.word]
-                    if term.word in words and not idf_enabled:
-                        words[term.word] = 1
+                    if term.word in words: 
+                        if idf_enabled:
+                            words[term.word] = idf[term.word]
+                        else:
+                            words[term.word] = 1
 
         # Normalize
         score = sum(words.values())/float(hypothesis_lenght)
 
         classification.append((int(pair.id), score))
 
+
+
     return classification
+
+talla = [3,13,15,19,32,59,63,129,142,153,155,166,167,174,262,266,298,308,314,322,336,358,360,387,404,410,451,463,464,472,484,506,521,538,553,561,563,571,581,660,663,692,693,716,722,739,755]
+nye_talla = [346,716,298,125,137,701,249,187,663,136,381,732,630,463,51,753,725,46]
 
 def lemma_match(tree, pos=True, **kwargs):
     '''
@@ -45,10 +54,12 @@ def lemma_match(tree, pos=True, **kwargs):
     '''
     print "Doing lemma matching"
     classes = []
+ 
     for pair in tree:
-
         lemmas = {}
         for sentence in pair.text:
+            if int(pair.id) in nye_talla:
+                print "ID",pair.id,"|",pair.text,"|",pair.hypothesis
             for term in sentence.terms:
                 if term.word and term.lemma and term.pos:
                     if not term.lemma in lemmas: #initalize var
@@ -144,13 +155,13 @@ def get_precn(pair,n, lemma=False):
 
 def _generate_ngram(sentence, n):
     for i in xrange(len(sentence)-n+1):
-        words = [term.word for term in sentence.terms if term.word ]
+        words = [term.word for term in sentence.terms if term.word and term.word != "fin"]
         ngram = words[i:i+n]
         yield ngram
 
 def _generate_ngram_lemma(sentence, n):
     for i in xrange(len(sentence)-n+1):
-        words = [term.lemma for term in sentence.terms if term.lemma ]
+        words = [term.lemma for term in sentence.terms if term.lemma and term.lemma != "fin"]
         ngram = words[i:i+n]
         yield ngram
 

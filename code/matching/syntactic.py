@@ -8,6 +8,9 @@ from utils.tree_edit_distance import postorder
 from utils.tree_edit_distance import Node
 from idf import idf
 
+nye_talla = [346,716,298,125,137,701,249,187,663,136,381,732,630,463,51,753,725,46]
+
+
 def print_tree_edit_distance(tree, idf_enabled=False, **kwargs):
     print "printing tree edit distance"
     for k, d, h, t in generate_edit_distance(tree, idf=idf_enabled):
@@ -26,8 +29,11 @@ def tree_edit_distance(tree, idf_enabled=False, **kwargs):
             normalized = 1-(d/float(hypothesis_to_none_ted(hypothesis)))
 
         classification.append((int(k), normalized))
+        if int(k) in nye_talla:
+            print "ID",k,"|",normalized
         print d, hypothesis_to_none_ted(hypothesis)
         print normalized
+
     return classification
 
 

@@ -78,6 +78,11 @@ class Sentence(object):
     def __init__(self, serial, terms):
         self.serial = serial
         self.terms = terms
+    def __repr__(self):
+        s = ""
+        for t in self.terms:
+            if t.word: s += t.word+" " 
+        return s
     def __len__(self):
         return len(self.terms)
 
