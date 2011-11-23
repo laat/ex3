@@ -60,6 +60,13 @@ def get_features(in_file, idf_enabled=False):
     for k,v in score:
         features[k].append(v)
 
+    #1,2,3-gram with synonyms of lemmas 
+    for n in [1,2,3]:
+        score = bleu(lexical_tree, n=n, idf_enabled=True, lemma=True, synonyms=True)
+        for k,v in score:
+            features[k].append(v)
+
+  
     #appending task and entailment
     for k,v in features.iteritems():
         features[k].extend(ref[str(k)])
@@ -75,6 +82,9 @@ def write_f(outfile, features):
                      ("neg", "d"),  
                      ("editdist","c"), 
                      ("numb", "d"), 
+                     ("bleu1", "c"), 
+                     ("bleu2" "c"), 
+                     ("bleu3", "c"), 
                      ("task", "d"), 
                      ("stemmer", "d")]
 
@@ -94,7 +104,8 @@ def tweaked(outfile, **kwargs):
     outfile = outfile.rsplit(".",1)[0]
     data = orange.ExampleTable(outfile)
 
-    c45 = orange.C45Learner(minObjs=100)
+    #c45 = orange.C45Learner(minObjs=100)
+    c45 = orange.kNNLearner(minObjs=100)
 
     results = orngTest.crossValidation([c45], data, folds=10)
     for i, example in enumerate(results.results, 1):
@@ -144,11 +155,12 @@ def bleu(tree, n=4, idf_enabled=False, return_only_n=False, lemma=False, synonym
 def get_precn(pair,n, lemma=False, synonyms=False):
     matching = 0
     total = 0
+
     for hyp in pair.hypothesis:
         for tex in pair.text:
             for i in range(0,len(hyp)-n+1):
                 def _tmp():
-                    for a in range(0,n):
+                    for a in range(0,n+1):
                         if i+a >= len(hyp.terms) or i+a >= len(tex.terms): return False
                         term = hyp.terms[i+a]
                         other_term = tex.terms[i+a]
