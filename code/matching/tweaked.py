@@ -9,6 +9,7 @@ from eval_rte import parse_reference
 from xml.etree.ElementTree import iterparse
 from collections import defaultdict
 
+
 def get_attributes_pair(in_file):
     features = {}
     for event, elem in iterparse(in_file):
@@ -54,6 +55,11 @@ def get_features(in_file, idf_enabled=False):
     for k,v in score:
         features[k].append(v)
 
+    #number_match
+    score = lexical.number_match(lexical_tree)
+    for k,v in score:
+        features[k].append(v)
+
     #appending task and entailment
     for k,v in features.iteritems():
         features[k].extend(ref[str(k)])
@@ -68,6 +74,7 @@ def write_f(outfile, features):
         attr = [("word", "c"),
                      ("neg", "d"),  
                      ("editdist","c"), 
+                     ("numb", "d"), 
                      ("task", "d"), 
                      ("stemmer", "d")]
 
@@ -96,18 +103,17 @@ def tweaked(outfile, **kwargs):
     return classes
 
 def tweaked_on_testdata(train_file, test_file, **kwargs):
-
     import orange, orngTest
     classes = []
-    train_file = outfile.rsplit(".",1)[0]
-    test_file = outfile.rsplit(".",1)[0]
+    train_file = train_file.rsplit(".",1)[0]
+    test_file = test_file.rsplit(".",1)[0]
 
+    test_data = orange.ExampleTable(test_file)
     train_data = orange.ExampleTable(train_file)
-    test_data = orange.ExampleTable(test_data)
 
     learner = orange.C45Learner(train_data, minObjs=100)
 
     for i, test in enumerate(test_data, 1):
-        p = apply(learner, [example, orange.GetProbabilities])["YES"]
+        p = apply(learner, [test, orange.GetProbabilities])["YES"]
         classes.append((i, p))
     return classes
