@@ -10,8 +10,7 @@ from idf import idf
 def word_match(tree, idf_enabled=False, **kwargs):
     print "Doing word matching"
     classification = []
-    talla = [3,13,15,19,32,59,63,129,142,153,155,166,167,174,262,266,298,308,314,322,336,358,360,387,404,410,451,463,464,472,484,506,521,538,553,561,563,571,581,660,663,692,693,716,722,739,755]
-
+  
     for pair in tree:
         words = {}
         # initialize words
@@ -58,8 +57,8 @@ def lemma_match(tree, pos=True, **kwargs):
     for pair in tree:
         lemmas = {}
         for sentence in pair.text:
-            if int(pair.id) in nye_talla:
-                print "ID",pair.id,"|",pair.text,"|",pair.hypothesis
+            #if int(pair.id) in nye_talla:
+            #    print "ID",pair.id,"|",pair.text,"|",pair.hypothesis
             for term in sentence.terms:
                 if term.word and term.lemma and term.pos:
                     if not term.lemma in lemmas: #initalize var

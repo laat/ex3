@@ -29,10 +29,10 @@ def tree_edit_distance(tree, idf_enabled=False, **kwargs):
             normalized = 1-(d/float(hypothesis_to_none_ted(hypothesis)))
 
         classification.append((int(k), normalized))
-        if int(k) in nye_talla:
-            print "ID",k,"|",normalized
-        print d, hypothesis_to_none_ted(hypothesis)
-        print normalized
+        #if int(k) in nye_talla:
+        #    print "ID",k,"|",normalized
+        #print d, hypothesis_to_none_ted(hypothesis)
+        #print normalized
 
         if normalized > 1: 
             print"key:", k, "distance:", d, "hyp_len", hypothesis_to_none_ted(hypothesis)
