@@ -23,7 +23,7 @@ c.name = "C45"
 learners = [bayes, tree, majority, knn, c]
 
 # compute accuracies on data
-data = orange.ExampleTable("tmp")
+data = orange.ExampleTable("train")
 results = orngTest.crossValidation(learners, data, folds=10)
 
 print len(results.results)
