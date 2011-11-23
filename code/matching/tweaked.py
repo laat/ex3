@@ -117,3 +117,69 @@ def tweaked_on_testdata(train_file, test_file, **kwargs):
         p = apply(learner, [test, orange.GetProbabilities])["YES"]
         classes.append((i, p))
     return classes
+
+
+####################33
+
+
+def bleu(tree, n=4, idf_enabled=False, return_only_n=False, lemma=False, synonyms=False, **kwargs):
+    memory = {}
+    print "Applying BLEU algorithm"
+    classes = []
+    for pair in tree:
+        precn = [0]*n
+
+        for i in xrange(n):
+            precn[i] = get_precn(pair, i+1, lemma=lemma, synonyms=synonyms)
+
+        if return_only_n:
+            score = precn[return_only_n-1] * (1/float(n))
+        else:
+            score = sum(precn) * (1/float(n))
+
+        classes.append((int(pair.id), score))
+    return classes
+
+
+def get_precn(pair,n, lemma=False, synonyms=False):
+    matching = 0
+    total = 0
+    for hyp in pair.hypothesis:
+        for tex in pair.text:
+            for i in range(0,len(hyp)-n+1):
+                def _tmp():
+                    for a in range(0,n):
+                        if i+a >= len(hyp.terms) or i+a >= len(tex.terms): return False
+                        term = hyp.terms[i+a]
+                        other_term = tex.terms[i+a]
+                        if not _memoized_term_equals(term, other_term, lemma=lemma, synonyms=synonyms): return False
+                    return True
+                if _tmp(): matching += 1
+                total += 1
+    return matching/float(total)
+
+
+memory = {} # remember to reset!
+def _get_synonyms(word):
+    if word and word != "fin": 
+        from nltk.corpus import wordnet as wn
+        for ss in wn.synsets(word):
+            for n in ss.lemma_names:
+                yield n
+
+def _term_equals(a,b,lemma=True,synonyms=True,use_pos=False):
+    #if use_pos and a
+    a_syns = _get_synonyms(a.lemma) if synonyms else [a.lemma]
+    b_syns = set(_get_synonyms(b.lemma)) if synonyms else [b.lemma]
+    for syn in a_syns:
+        if syn not in b_syns: 
+            return False
+    return True
+
+def _memoized_term_equals(a,b,lemma=True,synonyms=True,use_pos=False):
+    try: return memory[a,b]
+    except: pass
+    b = _term_equals(a,b)
+    memory[a,b] = b
+    return b
+
