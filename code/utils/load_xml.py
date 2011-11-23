@@ -16,7 +16,10 @@ def get_pairs(input_file):
         text = get_sentences(pair.find('text'))
         hypothesis = get_sentences(pair.find('hypothesis'))
         task = pair.attrib['task']
-        entailment = pair.attrib['entailment']
+        try:
+            entailment = pair.attrib['entailment']
+        except KeyError:
+            entailment = None # testdata
 
         pairs.append(Pair(id, text, hypothesis, entailment, task))
     return pairs
