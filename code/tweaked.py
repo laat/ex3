@@ -14,8 +14,8 @@ def main(training_data, test_data, output_file):
         training_features = get_features(training_data)
         test_features = get_features(test_data)
 
-        write_features("train.tab", training_features)
-        write_features("test.tab", test_features)
+        write_f("train.tab", training_features)
+        write_f("test.tab", test_features)
         results = tweaked_on_testdata("train.tab", "test.tab")
         classification = classify_results(results, 0.5) 
 

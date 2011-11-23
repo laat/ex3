@@ -6,6 +6,32 @@ lexical matching, part 1 in the exercice
 from collections import defaultdict
 from idf import idf
 
+def number_match(tree, **kwargs):
+    def _match(hypothesis, numbers_text):
+        for sentence in hypothesis:
+            for term in sentence.terms:
+                if term.word:
+                    try:
+                        if not int(term.word) in numbers_text:
+                            return False
+                    except ValueError:
+                        pass
+        return True
+
+    classes = []
+    for pair in tree:
+        numbers_text = {}
+        for sentence in pair.text:
+            for term in sentence.terms:
+                if term.word:
+                    try:
+                        numbers_text[int(term.word)] = True
+                    except ValueError:
+                        pass
+        score = _match(pair.hypothesis, numbers_text)
+        classes.append((int(pair.id), score))
+    return classes
+
 
 memory = {}
 def _get_synonyms(word):
