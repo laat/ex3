@@ -42,7 +42,7 @@ def find_best_threshold(tree, method, input_file, output_file, n=4, idf_enabled=
 def classify_results(results, threshold):
     res = {}
     for r in results:
-        if r[1] > threshold:
+        if r[1] >= threshold:
             res[str(r[0])] = "YES"
         else:
             res[str(r[0])] = "NO"

@@ -8,6 +8,7 @@ from eval_rte import parse_reference
 from xml.etree.ElementTree import iterparse
 from collections import defaultdict
 import orange
+import orngTest
 
 def get_attributes_pair(in_file):
     features = {}
@@ -93,3 +94,17 @@ def knn_classifier(tree, outfile="dev.tab", **kwargs):
         classes.append((i, p["YES"]))
     return classes
 
+def knn_classifier(tree, outfile="dev.tab", **kwargs):
+    classes = []
+    # TODO: skipp skriving til fil
+    outfile = outfile.rsplit(".",1)[0]
+    data = orange.ExampleTable(outfile)
+
+    knn = orange.kNNLearner(k=21, name="knn")
+
+    results = orngTest.crossValidation([knn], data, folds=10)
+    print results.results[0].probabilities
+    for i, example in enumerate(results.results, 1):
+        p = example.probabilities[0]
+        classes.append((i, p[1]))
+    return classes
