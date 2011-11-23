@@ -57,4 +57,15 @@ class TreeEditDistanceTest(unittest.TestCase):
                 return 0
             return 1
 
+        def cost_ins(n1, n2):
+            if n1 is None:
+                return 0
+            if n2 is None:
+                return 1
+            if n1.label == n2.label:
+                return 0
+            return 1
+
         self.failUnlessEqual(distance(self.A, self.B, costs=cost), 2)
+        self.failUnlessEqual(distance(self.A, self.B, costs=cost_ins), 1)
+

@@ -18,11 +18,15 @@ def tree_edit_distance(tree, idf_enabled=False, **kwargs):
     classification = []
     for k, d, hypothesis, text in generate_edit_distance(tree, idf=idf_enabled):
         # a shorter distance corresponds to a high score
-        print d, hypothesis_to_none_ted(hypothesis)
-        normalized = 1-(d/(2*float(hypothesis_to_none_ted(hypothesis,
+        normalized = 0
+        if idf:
+            normalized = 1-(d/(2*float(hypothesis_to_none_ted(hypothesis,
                                      idf_enabled=idf_enabled))))
+        else:
+            normalized = 1-(d/float(hypothesis_to_none_ted(hypothesis)))
 
         classification.append((int(k), normalized))
+        print d, hypothesis_to_none_ted(hypothesis)
         print normalized
     return classification
 
@@ -37,39 +41,33 @@ def generate_edit_distance(tree, idf=False):
         text = tree[k]["text"]
         print k
         if idf:
-            d = distance(hypothesis, text, costs=idf_cost)
+            d = distance(text, hypothesis, costs=idf_cost)
         else:
-            d = distance(hypothesis, text)
+            d = distance(text,hypothesis)
         yield k, d, hypothesis, text
 
 
 def idf_cost(node1, node2):
     #TODO: get the idf value for the insertion value
-    #delete
-    if node1 is None: 
-        return 0
     #insert
-    if node2 is None: 
-        if node1.name.startswith("E"):
+    if node1 is None: 
+        if node2.word:
+            return idf[node2.word]
+        else:
             return 0
-        if node1.word:
-            return idf[node1.word]
+    #delete
+    if node2 is None: 
         return 0
+
     #substitution
     if node1.label != node2.label:
-        if node1.word != None and node2.word != None:
-            return idf[node1.word] + idf[node2.word]
-        elif node1.word:
-            return idf[node1.word]
-        elif node2.word:
-            return idf[node2.word]
-        return 0
+        return 1
     else: # they are the same
         return 0
 
 def hypothesis_to_none_ted(hypothesis, idf_enabled=False):
     if idf_enabled:
-        d = distance(hypothesis, Node("E", "join", ""), costs=idf_cost)
+        d = distance(Node("E", "join", ""), hypothesis, costs=idf_cost)
     else:
-        d = distance(hypothesis, Node("E", "join", ""))
+        d = distance(Node("E", "join", ""), hypothesis)
     return d

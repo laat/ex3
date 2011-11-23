@@ -110,14 +110,12 @@ def unit_costs(node1, node2):
     # insertion cost
     # SF- tror det er delete i steden 
     if node1 is None:
-        return 0
+        return 1
     
     # deletion cost
     # SF- tror det er insert
     if node2 is None:
-        if node1.name.startswith("E"):
-            return 0
-        return 1
+        return 0
     
     # substitution cost
     if node1.label != node2.label:
@@ -215,7 +213,7 @@ def distance(t1, t2, costs=unit_costs):
             
         for m in xrange(l2[j], j+1):
             FD[ None, (l2[j],m) ] = ( FD[ None, (l2[j],m-1) ] + 
-                                      costs(None, T2[m].label) )
+                                      costs(None, T2[m]) )
 
         for x in xrange(l1[i], i+1):
             for y in xrange(l2[j], j+1):

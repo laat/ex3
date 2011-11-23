@@ -11,7 +11,7 @@ from matching.machine_learning import get_features
 from matching.machine_learning import write_features
 
 def find_best_threshold(tree, method, input_file, output_file, n=4, idf_enabled=False):
-    if method in [knn_classifier, knn_classifier_xv]
+    if method in [knn_classifier, knn_classifier_xv]:
         features = get_features(input_file, idf_enabled)
         write_features("tmp.tab", features) 
         results = knn_classifier(None, outfile="tmp.tab")

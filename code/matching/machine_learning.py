@@ -7,8 +7,6 @@ from eval_rte import parse_reference
 
 from xml.etree.ElementTree import iterparse
 from collections import defaultdict
-import orange
-import orngTest
 
 def get_attributes_pair(in_file):
     features = {}
@@ -66,7 +64,7 @@ def get_features(in_file, idf_enabled=False):
     return features
 
 def write_features(outfile, features):
-    ids = [k for k in features.iterkeys()]
+    ids = [int(k) for k in features.iterkeys()]
     ids.sort()
     with open(outfile, "w") as f:
         attribute = [("word", "c"), ("lemma","c"), ("lemmapos","c"), 
@@ -82,6 +80,7 @@ def write_features(outfile, features):
             f.write("\t".join(map(str, v))+"\n")
 
 def knn_classifier(tree, outfile="dev.tab", **kwargs):
+    import orange, orngTest
     classes = []
     # TODO: skipp skriving til fil
     outfile = outfile.rsplit(".",1)[0]
@@ -97,6 +96,7 @@ def knn_classifier(tree, outfile="dev.tab", **kwargs):
     return classes
 
 def knn_classifier_xv(tree, outfile="dev.tab", **kwargs):
+    import orange, orngTest
     classes = []
     # TODO: skipp skriving til fil
     outfile = outfile.rsplit(".",1)[0]
