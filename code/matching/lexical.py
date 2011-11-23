@@ -15,7 +15,8 @@ def _get_synonyms(word):
             for n in ss.lemma_names:
                 yield n
 
-def _term_equals(a,b):
+def _term_equals(a,b,synonyms=True,use_pos=True):
+    #if use_pos and a
     a_syns = _get_synonyms(a.lemma)
     b_syns = set(_get_synonyms(b.lemma))
     for syn in a_syns:
@@ -23,7 +24,7 @@ def _term_equals(a,b):
             return False
     return True
 
-def _memoized_term_equals(a,b):
+def _memoized_term_equals(a,b,synonyms=True,use_pos=True):
     try: return memory[a,b]
     except: pass
     b = _term_equals(a,b)
