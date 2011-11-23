@@ -36,10 +36,6 @@ def get_features(in_file, idf_enabled=False):
     for k, v in score:
         features[k].append(v)
 
-    #simple negation
-    score = lexical.get_simple_negations(lexical_tree)
-    for k, v in score:
-        features[k].append(v)
 
     #lemma_matching
     score = lexical.lemma_match(lexical_tree)
@@ -57,6 +53,11 @@ def get_features(in_file, idf_enabled=False):
     for k, v in score:
         features[k].append(v)
 
+    #simple negation
+    score = lexical.get_simple_negations(lexical_tree)
+    for k, v in score:
+        features[k].append(v)
+
     #appending task and entailment
     for k,v in features.iteritems():
         features[k].extend(ref[str(k)])
@@ -68,7 +69,7 @@ def write_features(outfile, features):
     ids.sort()
     with open(outfile, "w") as f:
         attribute = [("word", "c"), ("lemma","c"), ("lemmapos","c"), 
-                     ("bigram", "c"), ("neg", "c"),  ("task", "d"), ("stemmer", "d")]
+                     ("bigram", "c"), ("neg", "d"),  ("task", "d"), ("stemmer", "d")]
 
         labels = [v[0] for v in attribute]
         datatype = [v[1] for v in attribute]
