@@ -94,7 +94,7 @@ def knn_classifier(tree, outfile="dev.tab", **kwargs):
         classes.append((i, p["YES"]))
     return classes
 
-def knn_classifier(tree, outfile="dev.tab", **kwargs):
+def knn_classifier_xv(tree, outfile="dev.tab", **kwargs):
     classes = []
     # TODO: skipp skriving til fil
     outfile = outfile.rsplit(".",1)[0]

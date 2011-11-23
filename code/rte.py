@@ -9,6 +9,7 @@ from matching.idf import generate_idf_score
 from matching.machine_learning import get_features
 from matching.machine_learning import write_features
 from matching.machine_learning import knn_classifier
+from matching.machine_learning import knn_classifier_xv
 
 from utils.tree_edit_distance import postorder
 
@@ -33,7 +34,8 @@ METHODS = {
     "print_ted": print_tree_edit_distance,
     "ted" : tree_edit_distance,
     "features" : get_features,
-    "knn": knn_classifier
+    "knn": knn_classifier, 
+    "knn-xv": knn_classifier_xv
 }
 
 def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
@@ -58,7 +60,7 @@ def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
         features = get_features(tree, idf_enabled)
         write_features(output, features) 
         return
-    elif method in ["knn"]:
+    elif method in ["knn", "knn-xv"]:
         tree = (tree, tree)
     
     #run methods
@@ -66,10 +68,10 @@ def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
         find_best_threshold(tree[0], METHODS[method], tree[1], 
                             output, n=n, idf_enabled=idf_enabled)
     else:
-        if method == "knn":
+        if method in ["knn", "knn-xv"]:
             features = get_features(tree[0], idf_enabled=idf_enabled)
-            write_features("tmp.tab", features) 
-            results = knn_classifier("tmp.tab")
+            write_features("features.tab", features) 
+            results = knn_classifier(None, output="features.tab")
         else:
             results = METHODS[method](tree[0], n=n, idf_enabled=idf_enabled, 
                                   output=output)
