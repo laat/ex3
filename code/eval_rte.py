@@ -22,10 +22,13 @@ def evaluate(ref_fname, pred_fname, pred_id2label=None, ref_id2label=None):
     
     correct = [ id for id, label in ref_id2label.iteritems()
                 if pred_id2label[id] == label ]
+<<<<<<< HEAD
     
     for a in ref_id2label.keys():
        if a not in correct:
            print "NOT CORRECT:",a
+=======
+>>>>>>> ff67adf953b39d81798be2be9cf93bd34b482fea
 
     accuracy = len(correct) / float(len(ref_id2label))
     

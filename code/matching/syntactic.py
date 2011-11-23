@@ -23,7 +23,7 @@ def tree_edit_distance(tree, idf_enabled=False, **kwargs):
         # a shorter distance corresponds to a high score
         normalized = 0
         if idf:
-            normalized = 1-(d/(2*float(hypothesis_to_none_ted(hypothesis,
+            normalized = 1-(d/(float(hypothesis_to_none_ted(hypothesis,
                                      idf_enabled=idf_enabled))))
         else:
             normalized = 1-(d/float(hypothesis_to_none_ted(hypothesis)))
@@ -34,6 +34,8 @@ def tree_edit_distance(tree, idf_enabled=False, **kwargs):
         print d, hypothesis_to_none_ted(hypothesis)
         print normalized
 
+        if normalized > 1: 
+            print"key:", k, "distance:", d, "hyp_len", hypothesis_to_none_ted(hypothesis)
     return classification
 
 
@@ -45,7 +47,6 @@ def generate_edit_distance(tree, idf=False):
         k = str(k)
         hypothesis = tree[k]["hypothesis"]
         text = tree[k]["text"]
-        print k
         if idf:
             d = distance(text, hypothesis, costs=idf_cost)
         else:
