@@ -71,7 +71,7 @@ def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
         if method in ["knn", "knn-xv"]:
             features = get_features(tree[0], idf_enabled=idf_enabled)
             write_features("features.tab", features) 
-            results = knn_classifier(None, outfile="features.tab")
+            results = METHODS[method](None, outfile="features.tab")
         else:
             results = METHODS[method](tree[0], n=n, idf_enabled=idf_enabled, 
                                   output=output)

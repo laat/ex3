@@ -101,7 +101,7 @@ def knn_classifier(tree, outfile="dev.tab", **kwargs):
     return classes
 
 def knn_classifier_xv(tree, outfile="dev.tab", **kwargs):
-    import orange, orngTest
+    import orange, orngTest, orngStat
     classes = []
     # TODO: skipp skriving til fil
     outfile = outfile.rsplit(".",1)[0]
@@ -110,8 +110,17 @@ def knn_classifier_xv(tree, outfile="dev.tab", **kwargs):
     knn = orange.kNNLearner(k=21, name="knn")
 
     results = orngTest.crossValidation([knn], data, folds=10)
+
+    # output the results
+    print "Learner  CA     IS     Brier    AUC"
+
+    print "%-8s %5.3f  %5.3f  %5.3f  %5.3f" % (knn.name, \
+        orngStat.CA(results)[0], orngStat.IS(results)[0],
+        orngStat.BrierScore(results)[0], orngStat.AUC(results)[0])
+
     print results.results[0].probabilities
     for i, example in enumerate(results.results, 1):
         p = example.probabilities[0]
         classes.append((i, p[1]))
     return classes
+
