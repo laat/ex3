@@ -5,10 +5,21 @@ writes classification in the correct format
 
 from eval_rte import evaluate
 from eval_rte import parse_reference
+from matching.machine_learning import knn_classifier
+from matching.machine_learning import get_features
+from matching.machine_learning import write_features
+
+
 
 
 def find_best_threshold(tree, method, input_file, output_file, n=4, idf_enabled=False):
-    results = method(tree, n=n, idf_enabled=idf_enabled)
+    if method == knn_classifier:
+        features = get_features(input_file, idf_enabled)
+        write_features("tmp.tab", features) 
+        results = knn_classifier("tmp.tab")
+    else:
+        results = method(tree, output=output_file, n=n, idf_enabled=idf_enabled)
+
     reference = parse_reference(input_file)  # some speedup, read once
 
     best_threshold = 0.01

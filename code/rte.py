@@ -32,7 +32,8 @@ METHODS = {
     "bleu": bleu,
     "print_ted": print_tree_edit_distance,
     "ted" : tree_edit_distance,
-    "features" : get_features
+    "features" : get_features,
+    "knn": knn_classifier
 }
 
 def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
@@ -57,13 +58,21 @@ def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
         features = get_features(tree, idf_enabled)
         write_features(output, features) 
         return
-
+    elif method in ["knn"]:
+        tree = (tree, tree)
+    
     #run methods
     if find_best:
         find_best_threshold(tree[0], METHODS[method], tree[1], 
                             output, n=n, idf_enabled=idf_enabled)
     else:
-        results = METHODS[method](tree[0], n=n, idf_enabled=idf_enabled)
+        if method == "knn":
+            features = get_features(tree[0], idf_enabled=idf_enabled)
+            write_features("tmp.tab", features) 
+            results = knn_classifier("tmp.tab")
+        else:
+            results = METHODS[method](tree[0], n=n, idf_enabled=idf_enabled, 
+                                  output=output)
         classification = classify_results(results, threshold) 
 
         print "writing output"

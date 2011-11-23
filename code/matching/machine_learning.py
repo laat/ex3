@@ -79,9 +79,8 @@ def write_features(outfile, features):
         for k in ids:
             v = features[k]
             f.write("\t".join(map(str, v))+"\n")
-    knn_classifier(outfile)
 
-def knn_classifier(outfile, **kwargs):
+def knn_classifier(tree, outfile="dev.tab", **kwargs):
     classes = []
     # TODO: skipp skriving til fil
     outfile = outfile.rsplit(".",1)[0]
@@ -89,7 +88,8 @@ def knn_classifier(outfile, **kwargs):
 
     knn = orange.kNNLearner(data, k=21, name="knn")
 
-    for i, example in enumerate(data[:10], 1):
+    for i, example in enumerate(data, 1):
         p = apply(knn, [example, orange.GetProbabilities])
         classes.append((i, p["YES"]))
     return classes
+
