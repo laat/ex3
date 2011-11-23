@@ -75,6 +75,8 @@ def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
         else:
             results = METHODS[method](tree[0], n=n, idf_enabled=idf_enabled, 
                                   output=output)
+        if method == "print_ted":
+            return
         classification = classify_results(results, threshold) 
 
         print "writing output"
@@ -84,8 +86,7 @@ def main(tree, output, method, threshold, find_best, n=4, idf_enabled=False):
 if __name__ == '__main__':
         parser = argparse.ArgumentParser()
         parser.add_argument("-f", "--input_file", dest="file", type=str)
-        parser.add_argument("-o", "--output_file", dest="output", type=str,
-                            required=True)
+        parser.add_argument("-o", "--output_file", dest="output", type=str)
         parser.add_argument('-m', '--method', type=str, required=True, 
                             choices=METHODS.keys())
         parser.add_argument('-t', '--threshold', type=float, default=0.4)
